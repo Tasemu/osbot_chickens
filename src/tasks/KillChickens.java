@@ -14,7 +14,7 @@ public class KillChickens extends Task {
 	
 	@Override
 	public boolean verify() {
-		return !script.myPlayer().isAnimating();
+		return !script.getCombat().isFighting();
 	}
 
 	@Override
