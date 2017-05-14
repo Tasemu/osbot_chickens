@@ -1,3 +1,4 @@
+import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -12,6 +13,7 @@ public class Main extends Script {
 	
 	private long startTime;
 	private ArrayList<Task> tasks = new ArrayList<>();
+	private Area farm = new Area(3185, 3276, 3192, 3279);
  
     @Override
     public void onStart() {
@@ -27,12 +29,12 @@ public class Main extends Script {
         getExperienceTracker().start(Skill.RANGED);
         getExperienceTracker().start(Skill.MAGIC);
         
-        tasks.add(new KillChickens(this));
-        tasks.add(new Loot(this));
+        tasks.add(new KillChickens(this, farm));
+        tasks.add(new Loot(this, farm));
     }
     
     public int getChickenCount() {
-    	int xpPerChicken = 6;
+    	int xpPerChicken = 12;
     	int totalXp = getExperienceTracker().getGainedXP(Skill.ATTACK)
     				+ getExperienceTracker().getGainedXP(Skill.STRENGTH)
     				+ getExperienceTracker().getGainedXP(Skill.DEFENCE)
@@ -62,40 +64,43 @@ public class Main extends Script {
     	final long runTime = System.currentTimeMillis() - startTime;
     	int xpDrawMarker = 0;
     	
+    	drawMouse(g);
+    	
     	g.setColor(Color.WHITE);
     	g.drawString("Chicken Killer", 10, 40);
     	g.drawString("Time running: " + formatTime(runTime), 10, 55);
-    	g.drawString("Chickens Killed: ", 10, 70);
+    	g.drawString("Chickens Killed: " + getChickenCount(), 10, 70);
     	
     	if (getExperienceTracker().getGainedXP(Skill.ATTACK) > 0) {
-    		g.drawString("ATT XP gained: " + getExperienceTracker().getGainedXP(Skill.ATTACK), 10, 85 + xpDrawMarker);
+    		g.drawString("ATT XP gained: " + getExperienceTracker().getGainedXP(Skill.ATTACK) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.ATTACK)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
     	
     	if (getExperienceTracker().getGainedXP(Skill.STRENGTH) > 0) {
-    		g.drawString("STR XP gained: " + getExperienceTracker().getGainedXP(Skill.STRENGTH), 10, 85 + xpDrawMarker);
+    		g.drawString("STR XP gained: " + getExperienceTracker().getGainedXP(Skill.STRENGTH) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.STRENGTH)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
     	
     	if (getExperienceTracker().getGainedXP(Skill.DEFENCE) > 0) {
-    		g.drawString("DEF XP gained: " + getExperienceTracker().getGainedXP(Skill.DEFENCE), 10, 85 + xpDrawMarker);
+    		g.drawString("DEF XP gained: " + getExperienceTracker().getGainedXP(Skill.DEFENCE) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.DEFENCE)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
     	
     	if (getExperienceTracker().getGainedXP(Skill.HITPOINTS) > 0) {
-    		g.drawString("HP XP gained: " + getExperienceTracker().getGainedXP(Skill.HITPOINTS), 10, 85 + xpDrawMarker);
+    		g.drawString("HP XP gained: " + getExperienceTracker().getGainedXP(Skill.HITPOINTS) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.HITPOINTS)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
     	
     	if (getExperienceTracker().getGainedXP(Skill.RANGED) > 0) {
-    		g.drawString("RANGED XP gained: " + getExperienceTracker().getGainedXP(Skill.RANGED), 10, 85 + xpDrawMarker);
+    		g.drawString("RANGED XP gained: " + getExperienceTracker().getGainedXP(Skill.RANGED) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.RANGED)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
     	
     	if (getExperienceTracker().getGainedXP(Skill.MAGIC) > 0) {
-    		g.drawString("MAGIC XP gained: " + getExperienceTracker().getGainedXP(Skill.MAGIC), 10, 85 + xpDrawMarker);
+    		g.drawString("MAGIC XP gained: " + getExperienceTracker().getGainedXP(Skill.MAGIC) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.MAGIC)) + ")", 10, 85 + xpDrawMarker);
     		xpDrawMarker += 15;
     	}
+    	
     }
     
     public final String formatTime(final long ms){
@@ -103,5 +108,25 @@ public class Main extends Script {
         s %= 60; m %= 60; h %= 24;
         return String.format("%02d:%02d:%02d", h, m, s);
     }
+    
+    private void drawMouse(Graphics graphics) {
+		((Graphics2D) graphics).setRenderingHints(
+			new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+		Point pointer = mouse.getPosition();
+		Graphics2D spinG = (Graphics2D) graphics.create();
+		Graphics2D spinGRev = (Graphics2D) graphics.create();
+		spinG.setColor(new Color(255, 255, 255));
+		spinGRev.setColor(Color.cyan);
+		spinG.rotate(System.currentTimeMillis() % 2000d / 2000d * (360d) * 2 * Math.PI / 180.0, pointer.x, pointer.y);
+		spinGRev.rotate(System.currentTimeMillis() % 2000d / 2000d * (-360d) * 2 * Math.PI / 180.0, pointer.x, pointer.y);
+		final int outerSize = 20;
+		final int innerSize = 12;
+		spinG.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		spinGRev.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		spinG.drawArc(pointer.x - (outerSize / 2), pointer.y - (outerSize / 2), outerSize, outerSize, 100, 75);
+		spinG.drawArc(pointer.x - (outerSize / 2), pointer.y - (outerSize / 2), outerSize, outerSize, -100, 75);
+		spinGRev.drawArc(pointer.x - (innerSize / 2), pointer.y - (innerSize / 2), innerSize, innerSize, 100, 75);
+		spinGRev.drawArc(pointer.x - (innerSize / 2), pointer.y - (innerSize / 2), innerSize, innerSize, -100, 75);
+	}
  
 }
