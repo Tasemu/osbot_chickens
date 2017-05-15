@@ -3,6 +3,8 @@ package tasks;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.script.Script;
+import org.osbot.rs07.utility.ConditionalSleep;
+
 import static org.osbot.rs07.script.MethodProvider.random;
 
 public class Loot extends Task {
@@ -15,16 +17,23 @@ public class Loot extends Task {
 
 	@Override
 	public boolean verify() {
-		return !script.myPlayer().isAnimating() && script.objects.groundItems.closest("Feather") != null;
+		return !script.myPlayer().isAnimating() &&
+				script.objects.groundItems.closest("Feather") != null &&
+				!script.myPlayer().isUnderAttack();
 	}
 
 	@Override
 	public int execute() {
 		GroundItem feather = script.objects.groundItems.closest("Feather");
-		if (farm.contains(feather)) {
+		if (feather != null && farm.contains(feather)) {
 			script.log("Looting feathers");
 			if (feather.interact("Take")) {
-				script.log("Looted");
+				new ConditionalSleep(400) {
+					@Override
+					public boolean condition() {
+						return feather.exists();
+					};
+				}.sleep();
 			};
 		}
 		return random(300, 1100);
