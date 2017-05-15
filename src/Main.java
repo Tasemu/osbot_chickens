@@ -51,8 +51,9 @@ public class Main extends Script {
 		        { 3193, 3276 },
 		    }
 		);
- 
-    @Override
+	private KillChickens chickenKillingTask = new KillChickens(this, farm);
+    
+	@Override
     public void onStart() {
         log("Welcome to Chicken Killer!");
         log("Current version: " + getVersion());
@@ -66,7 +67,7 @@ public class Main extends Script {
         getExperienceTracker().start(Skill.RANGED);
         getExperienceTracker().start(Skill.MAGIC);
         
-        tasks.add(new KillChickens(this, farm));
+        tasks.add(chickenKillingTask);
         tasks.add(new Loot(this, farm));
     }
     
@@ -106,7 +107,7 @@ public class Main extends Script {
     	g.setColor(Color.WHITE);
     	g.drawString("Chicken Killer", 10, 40);
     	g.drawString("Time running: " + formatTime(runTime), 10, 55);
-    	g.drawString("Chickens Killed: " + getChickenCount(), 10, 70);
+    	g.drawString("Chickens Killed: " + chickenKillingTask.getChickensKilled(), 10, 70);
     	
     	if (getExperienceTracker().getGainedXP(Skill.ATTACK) > 0) {
     		g.drawString("ATT XP gained: " + getExperienceTracker().getGainedXP(Skill.ATTACK) + " (TTL: " + formatTime(getExperienceTracker().getTimeToLevel(Skill.ATTACK)) + ")", 10, 85 + xpDrawMarker);

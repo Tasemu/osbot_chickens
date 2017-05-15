@@ -19,7 +19,8 @@ public class KillChickens extends Task {
 				   farm.contains(entity);
 		}
 	};
-
+	private int chickenCounter = 0;
+	
 	public KillChickens(Script script, Area farm) {
 		super(script);
 		this.farm = farm;
@@ -47,6 +48,9 @@ public class KillChickens extends Task {
 								   script.myPlayer().isInteracting(chicken);
 						}
 					}.sleep();
+					if (chicken.getHealthPercent() == 0 || chicken == null) {
+						chickenCounter++;
+					}
 				};
 			}
 		} else {
@@ -60,4 +64,9 @@ public class KillChickens extends Task {
 	public String describe() {
 		return "Attacking Chickens.";
 	}
+	
+	public int getChickensKilled() {
+		return chickenCounter;
+	}
+
 }
